@@ -97,9 +97,6 @@ class Fio
 	{
 		$url = $this->buildRequestUrl('set', 'set-last-id', array($transactionId));
 		$this->callRequest($url);
-		
-		// there must be at least 1 second delay after setting a marker, otherwise API returns empty accountStatement in "get" methods
-		sleep(1);
 	}
 	
 	
@@ -113,9 +110,6 @@ class Fio
 	{
 		$url = $this->buildRequestUrl('set', 'set-last-date', array($date->format('Y-m-d')));
 		$this->callRequest($url);
-		
-		// there must be at least 1 second delay after setting a marker, otherwise API returns empty accountStatement in "get" methods
-		sleep(1);
 	}
 
 	

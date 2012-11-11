@@ -12,7 +12,8 @@ $to = new \DateTime;
 $result = $fio->getTransactionsByPeriod($from, $to);
 
 // set marker and then get new transactions since this marker
-$fio->setMarker(12621646494);
+$fio->setIdMarker(12621646494);
+// !!! there must be at least 1 second delay after setting a marker, otherwise API returns empty accountStatement in "get" methods
 $result = $fio->getTransactionsByMarker();
 
 // get transactions from official 2nd summary of 2012
