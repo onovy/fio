@@ -1,0 +1,4 @@
+<?php
+
+// token generated via internet banking application
+$token = '';
