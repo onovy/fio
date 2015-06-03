@@ -51,8 +51,8 @@ class Fio
 	public function getTransactionsByPeriod(\DateTime $from, \DateTime $to)
 	{
 		$url = $this->buildRequestUrl('get', 'periods', array($from->format('Y-m-d'), $to->format('Y-m-d')));
-		$result = $this->callRequest($url);
-		
+		$result = $this->callRequest($url, true);
+
 		return TransactionList::create($result->accountStatement, $from, $to);
 	}
 	
@@ -67,8 +67,8 @@ class Fio
 	public function getTransactionsBySummary($year, $summaryNumber)
 	{
 		$url = $this->buildRequestUrl('get', 'by-id', array($year, $summaryNumber));
-		$result = $this->callRequest($url);
-		
+		$result = $this->callRequest($url, true);
+
 		return TransactionList::create($result->accountStatement);
 	}
 	
@@ -81,7 +81,7 @@ class Fio
 	public function getTransactionsByMarker()
 	{
 		$url = $this->buildRequestUrl('get', 'last', null);
-		$result = $this->callRequest($url);
+		$result = $this->callRequest($url, true);
 
 		return TransactionList::create($result->accountStatement);
 	}
@@ -96,7 +96,7 @@ class Fio
 	public function setIdMarker($transactionId)
 	{
 		$url = $this->buildRequestUrl('set', 'set-last-id', array($transactionId));
-		$this->callRequest($url);
+		$this->callRequest($url, false);
 	}
 	
 	
@@ -109,7 +109,7 @@ class Fio
 	public function setUnsuccessfullDownloadAttempt(\DateTime $date)
 	{
 		$url = $this->buildRequestUrl('set', 'set-last-date', array($date->format('Y-m-d')));
-		$this->callRequest($url);
+		$this->callRequest($url, false);
 	}
 
 	
@@ -139,15 +139,23 @@ class Fio
 	 * @param string $url
 	 * @return mixed
 	 */ 
-	private function callRequest($url)
+	private function callRequest($url, $needResult)
 	{
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$result = curl_exec($ch);
-		curl_close($ch);
-		
-		return json_decode($result);
-	}
+		do {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$result = curl_exec($ch);
+			curl_close($ch);
 
+			$json = json_decode($result);
+
+			if ($result === FALSE || ($needResult && $json === null)) {
+				// Try again, but wait a moment
+				sleep(15);
+			}
+		} while ($result === FALSE || ($needResult && $json === null));
+
+		return $json;
+	}
 }
